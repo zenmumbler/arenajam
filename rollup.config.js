@@ -4,11 +4,11 @@ import typescript from "typescript";
 
 export default [
 	{
-		input: `src/jamdown.ts`,
+		input: `src/arenajam.ts`,
 		output: [{
-			file: `build/jamdown.js`,
+			file: `build/arenajam.js`,
 			format: "iife",
-			name: "jamdown",
+			name: "arenajam",
 		}],
 		plugins: [
 			resolve({ browser: true }),

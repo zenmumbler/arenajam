@@ -1,4 +1,4 @@
-// JamDown
+// ArenaJam
 // (c) 2020 by Tobi Guse and Arthur Langereis
 
 import { on, show, hide } from "./util";
