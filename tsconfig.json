@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+		"module": "es2015",
+		"target": "es2018",
+		"moduleResolution": "node",
+
+		"outDir": "build",
+        "noEmitOnError": true,
+
+		"strict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": true,
+		"forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": false,
+
+        "removeComments": false,
+        "sourceMap": false,
+
+		"lib": ["dom", "esnext"],
+	},
+	"include": [
+		"src/*.ts",
+		"./*.d.ts"
+	]
+}
