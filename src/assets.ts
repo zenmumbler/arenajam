@@ -29,6 +29,21 @@ export interface SpriteSheet {
 	image: CanvasImageSource;
 }
 
+export interface AnimationFrame {
+	tileIndex: number;
+	duration: number;
+}
+
+export interface Animation {
+	sheet: SpriteSheet;
+	frames: AnimationFrame[];
+}
+
+export interface AnimationDesc {
+	tileDim: number;
+	frames: AnimationFrame[];
+}
+
 export async function loadSpriteSheet(fileName: string, ownerURL: string, tileDim: number): Promise<SpriteSheet> {
 	const fullURL = resolveRelativePath(fileName, ownerURL);
 	const image = await loadImage(fullURL);
@@ -37,6 +52,14 @@ export async function loadSpriteSheet(fileName: string, ownerURL: string, tileDi
 		columns: (image.width / tileDim) | 0,
 		rows: (image.height / tileDim) | 0,
 		image
+	};
+}
+
+export async function loadAnimation(fileName: string, desc: AnimationDesc): Promise<Animation> {
+	const sheet = await loadSpriteSheet(fileName, "", desc.tileDim);
+	return {
+		sheet,
+		frames: desc.frames
 	};
 }
 
