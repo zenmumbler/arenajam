@@ -29,6 +29,17 @@ export interface SpriteSheet {
 	image: CanvasImageSource;
 }
 
+export interface AnimationFrame {
+	tileIndex: number;
+	duration: number;
+}
+
+export interface Animation {
+	name: string;
+	sheet: SpriteSheet;
+	frames: AnimationFrame[];
+}
+
 export async function loadSpriteSheet(fileName: string, ownerURL: string, tileDim: number): Promise<SpriteSheet> {
 	const fullURL = resolveRelativePath(fileName, ownerURL);
 	const image = await loadImage(fullURL);

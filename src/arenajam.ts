@@ -3,7 +3,7 @@
 
 import { on, show, hide } from "./util";
 import { Input } from "./input";
-import { SpriteSheet } from "./assets";
+import { SpriteSheet, Animation, AnimationFrame } from "./assets";
 import { TMXMap, loadTMXMap } from "./tilemap";
 import { ArenaRender } from "./render";
 
@@ -34,14 +34,19 @@ function isActor(o: any): o is Actor {
 }
 
 interface Sprite {
-	sheet: SpriteSheet;
-	spriteEnabled: boolean;
-	spriteTileX: number;
-	spriteTileY: number;
+	animation: Animation;
+	cycleStart: number;
+	frameIndex: number;
 }
 
 function isSprite(o: any): o is Sprite {
-	return o && typeof (o) === "object" && o.sheet && typeof o.spriteEnabled === "boolean" && typeof o.spriteTileX === "number" && typeof o.spriteTileY === "number";
+	return o && typeof (o) === "object" && o.animation && typeof o.cycleStart === "number" && typeof o.frameIndex === "number";
+}
+
+function startAnimation(spr: Sprite, anim: Animation) {
+	spr.animation = anim;
+	spr.cycleStart = Date.now();
+	spr.frameIndex = 0;
 }
 
 const sprites = new Map<string, Entity & Sprite & Positioned>();
@@ -56,11 +61,18 @@ function addEntity(ent: Entity) {
 	}
 }
 
-class Player implements Entity, Actor, Positioned {
+class Player implements Entity, Actor, Positioned, Sprite {
 	name = "player";
 	x = 0;
 	y = 0;
 	lastDir = "-";
+	animation!: Animation;
+	cycleStart!: number;
+	frameIndex!: number;
+
+	constructor() {
+		// startAnimation(this, )
+	}
 
 	update() {
 		let dir = "-";
@@ -99,8 +111,12 @@ function frame() {
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
-		const dim = sprite.sheet.tileDim;
-		context.drawImage(sprite.sheet.image, sprite.spriteTileX * dim, sprite.spriteTileY * dim, dim, dim, sprite.x, sprite.y, dim, dim);
+		const frame = sprite.animation.frames[sprite.frameIndex];
+		const sheet = sprite.animation.sheet;
+		const dim = sheet.tileDim;
+		const tileX = frame.tileIndex % sheet.columns;
+		const tileY = (frame.tileIndex / sheet.columns) | 0;
+		context.drawImage(sheet.image, tileX * dim, tileY * dim, dim, dim, sprite.x * 2, sprite.y * 2, dim * 2, dim * 2);
 	}
 
 	// draw fg layers
