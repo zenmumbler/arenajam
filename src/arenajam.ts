@@ -69,7 +69,6 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	name = "player";
 	x = 0;
 	y = 0;
-	lastDir = "-";
 	animation!: Animation;
 	frameStart!: number;
 	frameIndex!: number;
@@ -101,24 +100,35 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	update() {
 		const usesDirectionKey = Input.left || Input.right || Input.up || Input.down;
 
-		if (usesDirectionKey) {
-			if (this.mode !== "walk") {
-				startAnimation(this, anims.walk);
-				this.mode = "walk";
-			}
-			this.moveCharacter();
-		}
-		else if (Input.attack) {
+		if (Input.attack) {
 			if (this.mode !== "attack") {
 				startAnimation(this, anims.attack);
 				this.mode = "attack";
 			}
 		}
-		else {
+		else if (usesDirectionKey) {
+			// can only start walking from stance
+			if (this.mode === "stand") {
+				startAnimation(this, anims.walk);
+				this.mode = "walk";
+			}
+			if (this.mode === "walk") {
+				this.moveCharacter();
+			}
+		}
+		else if (this.mode === "walk") {
 			startAnimation(this, anims.stand);
 			this.mode = "stand";
 		}
 	}
+
+	onAnimCycleEnd() {
+		if (this.mode === "attack") {
+			startAnimation(this, anims.stand);
+			this.mode = "stand";
+		}
+	}
+}
 }
 
 function frame() {
