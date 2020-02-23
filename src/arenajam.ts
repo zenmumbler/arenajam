@@ -70,19 +70,43 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	animation!: Animation;
 	frameStart!: number;
 	frameIndex!: number;
-
+	mode = "stand";
+	movementSpeed = 0.8;
 	constructor() {
-		startAnimation(this, anims.walk);
+		startAnimation(this, anims.stand);
 		this.x = 100;
 		this.y = 100;
 	}
 
-	update() {
+	moveCharacter () {
+
 		if (Input.left) {
-			startAnimation(this, anims.attack);
+			this.x -= this.movementSpeed;
 		}
 		else if (Input.right) {
-			startAnimation(this, anims.walk);
+			this.x += this.movementSpeed;
+		}
+		else if (Input.up) {
+			this.y -= this.movementSpeed;
+		}
+		else if (Input.down) {
+			this.y += this.movementSpeed;
+		}
+	}
+
+	update() {
+		const usesDirectionKey = Input.left || Input.right || Input.up || Input.down;
+
+		if (usesDirectionKey) {
+			if (this.mode !== "walk") {
+				startAnimation(this, anims.walk);
+				this.mode = "walk";
+			}
+			this.moveCharacter();
+		}
+		else {
+			startAnimation(this, anims.stand);
+			this.mode = "stand";
 		}
 	}
 }
@@ -164,6 +188,12 @@ async function init() {
 			{ tileIndex: 1, duration: 100 },
 			{ tileIndex: 2, duration: 100 },
 			{ tileIndex: 3, duration: 100 },
+		]
+	});
+	anims.stand = await loadAnimation("source-assets/sprites/standing-sprite.png", {
+		tileDim: 64,
+		frames: [
+			{ tileIndex: 0, duration: 1000}
 		]
 	});
 	render = new ArenaRender(map);
