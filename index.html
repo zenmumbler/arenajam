@@ -13,6 +13,8 @@
 			height: 768px;
 			margin: 100px auto 50px auto;
 			position: relative;
+			-webkit-user-select: none;
+			-moz-user-select: none;
 		}
 		canvas {
 			position: absolute;
@@ -24,6 +26,14 @@
 <main>
 	<canvas width="768" height="768" id="stage"></canvas>
 </main>
+<script>
+	function handleFSClick() {
+		const el = document.querySelector("canvas");
+		if (el.requestFullscreen) el.requestFullscreen();
+		else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+	}
+</script>
+<p style="text-align: center;"><button onclick="handleFSClick()">Fullscreen</button></p>
 <script src="build/arenajam.js"></script>
 </body>
 </html>
