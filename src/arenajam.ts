@@ -129,7 +129,18 @@ class Player implements Entity, Actor, Positioned, Sprite {
 		}
 	}
 }
+
+
+class Minotaur {
+	name = "minotaur";
+	x = 200;
+	y = 80;
+	animation!: Animation;
+	frameStart = 0;
+	frameIndex = 0;
+	flipHoriz = false;
 }
+
 
 function frame() {
 	Input.update();
