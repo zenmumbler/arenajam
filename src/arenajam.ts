@@ -196,7 +196,8 @@ async function init() {
 
 	map = await loadTMXMap("maps/arena.xml");
 	anims.walk = await loadAnimation("source-assets/sprites/walking-sprite.png", {
-		tileDim: 64,
+		tileWidth: 64,
+		tileHeight: 64,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
 			{ tileIndex: 1, duration: 100 },
@@ -205,7 +206,8 @@ async function init() {
 		]
 	});
 	anims.attack = await loadAnimation("source-assets/sprites/attack-sprite.png", {
-		tileDim: 64,
+		tileWidth: 64,
+		tileHeight: 64,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
 			{ tileIndex: 1, duration: 100 },
@@ -214,7 +216,8 @@ async function init() {
 		]
 	});
 	anims.stand = await loadAnimation("source-assets/sprites/standing-sprite.png", {
-		tileDim: 64,
+		tileWidth: 64,
+		tileHeight: 64,
 		frames: [
 			{ tileIndex: 0, duration: 1000}
 		]
