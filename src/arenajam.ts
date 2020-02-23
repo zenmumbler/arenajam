@@ -78,22 +78,11 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	}
 
 	update() {
-		let dir = "-";
 		if (Input.left) {
-			dir = "left";
+			startAnimation(this, anims.attack);
 		}
 		else if (Input.right) {
-			dir = "right";
-		}
-		else if (Input.up) {
-			dir = "up";
-		}
-		else if (Input.down) {
-			dir = "down";
-		}
-		if (dir !== this.lastDir) {
-			document.querySelector("#dir")!.textContent = dir;
-			this.lastDir = dir;
+			startAnimation(this, anims.walk);
 		}
 	}
 }
@@ -141,11 +130,20 @@ function frame() {
 async function init() {
 	const canvas = document.querySelector("canvas")!;
 	context = canvas.getContext("2d")!;
+	context.imageSmoothingEnabled = false;
+	let deactivationTime = 0;
 
 	Input.onActiveChange = (newActive) => {
 		running = newActive;
 		if (running) {
+			const deltaTime = Date.now() - deactivationTime;
+			for (const [_, sprite] of sprites) {
+				sprite.frameStart += deltaTime;
+			}
 			frame();
+		}
+		else {
+			deactivationTime = Date.now();
 		}
 	};
 
