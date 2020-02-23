@@ -29,8 +29,9 @@ export interface SpriteSheet {
 	image: CanvasImageSource;
 }
 
-export async function loadSpriteSheet(fileName: string, tileDim: number): Promise<SpriteSheet> {
-	const image = await loadImage(fileName);
+export async function loadSpriteSheet(fileName: string, ownerURL: string, tileDim: number): Promise<SpriteSheet> {
+	const fullURL = resolveRelativePath(fileName, ownerURL);
+	const image = await loadImage(fullURL);
 	return {
 		tileDim,
 		columns: (image.width / tileDim) | 0,
@@ -47,6 +48,6 @@ export async function loadXMLDocument(url: string) {
 	return doc.firstElementChild!;
 }
 
-export function resolveRelativeURL(base: string, rel: string) {
-	return (new URL(rel, base)).href;
+export function resolveRelativePath(relPath: string, basePath: string) {
+	return (new URL(relPath, "file:///" + basePath)).pathname.slice(1);
 }

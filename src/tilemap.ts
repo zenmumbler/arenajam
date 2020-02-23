@@ -1,6 +1,6 @@
 // Minimal support for orthogonal right-down order, base64 encoded tile data
 
-import { loadXMLDocument, SpriteSheet, loadSpriteSheet, resolveRelativeURL } from "./assets";
+import { loadXMLDocument, SpriteSheet, loadSpriteSheet, resolveRelativePath } from "./assets";
 
 function stringAttr(el: Element, name: string, def = "") {
 	return el.attributes.getNamedItem(name)?.textContent ?? def;
@@ -61,14 +61,25 @@ function loadLayer(layerEl: Element): TMXLayer {
 	const width = intAttr(layerEl, "width");
 	const height = intAttr(layerEl, "height");
 	const name = stringAttr(layerEl, "name");
+	const compression = intAttr(layerEl, "compressionlevel", 0);
 	const properties: Record<string, string> = {};
 	let tileIDs: Uint32Array | undefined;
 	let tileRotations: Uint8Array | undefined;
 
+	if (compression > 0) {
+		throw new Error("compressed layer data not supported");
+	}
+
 	layerEl.childNodes.forEach(node => {
+		if (node.nodeType !== Node.ELEMENT_NODE) {
+			return;
+		}
 		const el = node as Element;
 		if (el.nodeName === "properties") {
 			el.childNodes.forEach(prop => {
+				if (prop.nodeType !== Node.ELEMENT_NODE) {
+					return;
+				}
 				const propEl = prop as Element;
 				const propName = stringAttr(propEl, "name");
 				const propVal = stringAttr(propEl, "value");
@@ -83,7 +94,7 @@ function loadLayer(layerEl: Element): TMXLayer {
 				tileIDs = new Uint32Array(byteView.buffer);
 			}
 			else if (enc === "csv") {
-				tileIDs = new Uint32Array(dataStr.split(",").map(s => parseInt(s.trim())));
+				tileIDs = new Uint32Array(dataStr.split(",").map(s => parseInt(s.trim(), 10)));
 			}
 			else {
 				throw new Error(`unknown layer data encoding: ${enc}`);
@@ -109,9 +120,7 @@ function loadLayer(layerEl: Element): TMXLayer {
 			tileRotations
 		};
 	}
-	else {
-		throw new Error("No layer data present in layer");
-	}
+	throw new Error("No layer data present in layer");
 }
 
 export interface TileSet extends SpriteSheet {
@@ -119,18 +128,19 @@ export interface TileSet extends SpriteSheet {
 	firstGID: number;
 }
 
-async function loadTileSet(def: Element): Promise<TileSet> {
+async function loadTileSet(def: Element, ownerURL: string): Promise<TileSet> {
 	const firstGID = intAttr(def, "firstgid");
 	const source = stringAttr(def, "source");
 	if (source) {
-		def = await loadXMLDocument(resolveRelativeURL("./", source));
+		ownerURL = resolveRelativePath(source, ownerURL);
+		def = await loadXMLDocument(ownerURL);
 	}
 	const tileDim = intAttr(def, "tilewidth");
 
 	const image = def.firstElementChild;
 	if (image && image.nodeName === "image") {
 		const imageURL = stringAttr(image, "source");
-		const sheet = await loadSpriteSheet(imageURL, tileDim);
+		const sheet = await loadSpriteSheet(imageURL, ownerURL, tileDim);
 		return {
 			...sheet,
 			firstGID,
@@ -158,9 +168,12 @@ export async function loadTMXMap(url: string): Promise<TMXMap> {
 	const tileSetLoads: Promise<TileSet>[] = [];
 
 	tileDoc.childNodes.forEach(node => {
+		if (node.nodeType !== Node.ELEMENT_NODE) {
+			return;
+		}
 		const el = node as Element;
 		if (node.nodeName === "tileset") {
-			tileSetLoads.push(loadTileSet(el));
+			tileSetLoads.push(loadTileSet(el, url));
 		}
 		if (node.nodeName === "layer") {
 			layers.push(loadLayer(el));

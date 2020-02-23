@@ -4,9 +4,11 @@
 import { on, show, hide } from "./util";
 import { Input } from "./input";
 import { SpriteSheet } from "./assets";
+import { TMXMap, loadTMXMap } from "./tilemap";
 
 let running = true;
 let context: CanvasRenderingContext2D;
+let map: TMXMap;
 
 interface Entity {
 	name: string;
@@ -84,7 +86,7 @@ function frame() {
 	}
 }
 
-function init() {
+async function init() {
 	const canvas = document.querySelector("canvas")!;
 	context = canvas.getContext("2d")!;
 
@@ -94,6 +96,9 @@ function init() {
 			frame();
 		}
 	};
+
+	map = await loadTMXMap("maps/arena.xml");
+	console.info("Map", map);
 
 	addEntity(new Player());
 
