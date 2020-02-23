@@ -70,8 +70,8 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	x = 0;
 	y = 0;
 	animation!: Animation;
-	frameStart!: number;
-	frameIndex!: number;
+	frameStart = 0;
+	frameIndex = 0;
 	flipHoriz = false;
 	mode = "stand";
 	movementSpeed = 0.8;
@@ -187,7 +187,18 @@ function frame() {
 	context.drawImage(render.bg, 0, 0, cw, ch);
 
 	// draw sprites
-	for (const [_, sprite] of sprites) {
+	const sortedSprites = [...sprites.values()];
+	sortedSprites.sort((a, b) => {
+		// round each coord to a pixel
+		const ax = a.x | 0;
+		const ay = a.y | 0;
+		const bx = b.x | 0;
+		const by = b.y | 0;
+		// sort top-bottom -> left->right
+		return (ay - by) || (ax - bx);
+	});
+
+	for (const sprite of sortedSprites) {
 		const anim = sprite.animation;
 		const frame = anim.frames[sprite.frameIndex];
 		const sheet = anim.sheet;
