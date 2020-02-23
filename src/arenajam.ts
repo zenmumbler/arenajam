@@ -74,9 +74,7 @@ function frame() {
 
 	// draw bg layers
 	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-	context.save();
-	context.scale(2.0, 2.0);
-	context.drawImage(render.bg, 0, 0);
+	context.drawImage(render.bg, 0, 0, 768, 768);
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
@@ -85,9 +83,8 @@ function frame() {
 	}
 
 	// draw fg layers
-	context.drawImage(render.fg, 0, 0);
+	context.drawImage(render.fg, 0, 0, 768, 768);
 
-	context.restore();
 	if (running) {
 		requestAnimationFrame(frame);
 	}
