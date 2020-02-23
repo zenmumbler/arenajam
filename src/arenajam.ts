@@ -98,6 +98,11 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	}
 
 	update() {
+		const mino = sprites.get("minotaur");
+		if (mino) {
+			this.flipHoriz = mino.x < this.x;
+		}
+
 		const usesDirectionKey = Input.left || Input.right || Input.up || Input.down;
 
 		if (Input.attack) {
@@ -145,7 +150,10 @@ class Minotaur implements Entity, Actor, Positioned, Sprite {
 	}
 
 	update() {
-		//
+		const player = sprites.get("player");
+		if (player) {
+			this.flipHoriz = player.x < this.x;
+		}
 	}
 }
 
@@ -193,7 +201,7 @@ function frame() {
 				sheet.hFlipImage,
 				sheet.image.width - (tileX + 1) * dimx, tileY * dimy,
 				dimx, dimy,
-				(sprite.x + anim.offsetX) * 2, (sprite.y + anim.offsetY) * 2,
+				(sprite.x + anim.offsetX) * 2 - 32, (sprite.y + anim.offsetY) * 2,
 				dimx * 2, dimy * 2
 			);
 		}
@@ -268,7 +276,11 @@ async function init() {
 		offsetX: 0,
 		offsetY: 0,
 		frames: [
-			{ tileIndex: 0, duration: 1000 }
+			{ tileIndex: 0, duration: 150 },
+			{ tileIndex: 1, duration: 150 },
+			{ tileIndex: 2, duration: 150 },
+			{ tileIndex: 3, duration: 150 },
+			{ tileIndex: 4, duration: 150 }
 		]
 	});
 	anims.minoIdle = await loadAnimation("source-assets/sprites/enemy-1-idle.png", {
@@ -277,11 +289,11 @@ async function init() {
 		offsetX: 0,
 		offsetY: 0,
 		frames: [
-			{ tileIndex: 0, duration: 100 },
-			{ tileIndex: 1, duration: 100 },
-			{ tileIndex: 2, duration: 100 },
-			{ tileIndex: 3, duration: 100 },
-			{ tileIndex: 4, duration: 100 }
+			{ tileIndex: 0, duration: 150 },
+			{ tileIndex: 1, duration: 150 },
+			{ tileIndex: 2, duration: 150 },
+			{ tileIndex: 3, duration: 150 },
+			{ tileIndex: 4, duration: 150 }
 		]
 	});
 	render = new ArenaRender(map);
