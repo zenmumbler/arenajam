@@ -256,6 +256,19 @@ async function init() {
 			{ tileIndex: 0, duration: 1000 }
 		]
 	});
+	anims.minoIdle = await loadAnimation("source-assets/sprites/enemy-1-idle.png", {
+		tileWidth: 64,
+		tileHeight: 64,
+		offsetX: 0,
+		offsetY: 0,
+		frames: [
+			{ tileIndex: 0, duration: 100 },
+			{ tileIndex: 1, duration: 100 },
+			{ tileIndex: 2, duration: 100 },
+			{ tileIndex: 3, duration: 100 },
+			{ tileIndex: 4, duration: 100 }
+		]
+	});
 	render = new ArenaRender(map);
 
 	addEntity(new Player());
