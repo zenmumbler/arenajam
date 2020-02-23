@@ -62,6 +62,17 @@ const enum StdButton {
 	EXTRA = 17
 }
 
+const enum RawButton {
+	FACE_RIGHT = 2,
+
+	R1 = 5,
+
+	DP_UP = 14,
+	DP_DOWN = 15,
+	DP_LEFT = 16,
+	DP_RIGHT = 17
+}
+
 
 export interface Keyboard {
 	keyState(kc: Key): ButtonState;
@@ -161,6 +172,7 @@ class KeyboardImpl implements Keyboard {
 class InputHandler {
 	keyboard: Keyboard = new KeyboardImpl();
 	gamepadIndex = -1;
+	gamepadStd = true;
 	gamepad: Gamepad | undefined;
 
 	constructor() {
@@ -180,10 +192,8 @@ class InputHandler {
 		window.addEventListener("gamepadconnected", (e) => {
 			const gp = navigator.getGamepads()[(e as GamepadEvent).gamepad.index]!;
 			console.info("GAMEPAD!", gp);
-			if (gp.mapping === "standard") {
-				console.info("setting default gamepad");
-				this.gamepadIndex = gp.index;
-			}
+			this.gamepadIndex = gp.index;
+			this.gamepadStd = gp.mapping === "standard";
 		});
 	}
 
@@ -196,7 +206,7 @@ class InputHandler {
 	get left() {
 		let l = this.keyboard.down(Key.LEFT);
 		if (this.gamepad) {
-			l = l || this.gamepad.buttons[StdButton.DP_LEFT].pressed;
+			l = l || this.gamepad.buttons[this.gamepadStd ? StdButton.DP_LEFT : RawButton.DP_LEFT].pressed;
 		}
 		return l;
 	}
@@ -204,7 +214,7 @@ class InputHandler {
 	get right() {
 		let r = this.keyboard.down(Key.RIGHT);
 		if (this.gamepad) {
-			r = r || this.gamepad.buttons[StdButton.DP_RIGHT].pressed;
+			r = r || this.gamepad.buttons[this.gamepadStd ? StdButton.DP_RIGHT : RawButton.DP_RIGHT].pressed;
 		}
 		return r;
 	}
@@ -212,7 +222,7 @@ class InputHandler {
 	get up() {
 		let u = this.keyboard.down(Key.UP);
 		if (this.gamepad) {
-			u = u || this.gamepad.buttons[StdButton.DP_UP].pressed;
+			u = u || this.gamepad.buttons[this.gamepadStd ? StdButton.DP_UP : RawButton.DP_UP].pressed;
 		}
 		return u;
 	}
@@ -220,7 +230,7 @@ class InputHandler {
 	get down() {
 		let d = this.keyboard.down(Key.DOWN);
 		if (this.gamepad) {
-			d = d || this.gamepad.buttons[StdButton.DP_DOWN].pressed;
+			d = d || this.gamepad.buttons[this.gamepadStd ? StdButton.DP_DOWN : RawButton.DP_DOWN].pressed;
 		}
 		return d;
 	}
