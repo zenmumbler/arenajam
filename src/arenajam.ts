@@ -5,10 +5,12 @@ import { on, show, hide } from "./util";
 import { Input } from "./input";
 import { SpriteSheet } from "./assets";
 import { TMXMap, loadTMXMap } from "./tilemap";
+import { ArenaRender } from "./render";
 
 let running = true;
 let context: CanvasRenderingContext2D;
 let map: TMXMap;
+let render: ArenaRender;
 
 interface Entity {
 	name: string;
@@ -72,6 +74,9 @@ function frame() {
 
 	// draw bg layers
 	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+	context.save();
+	context.scale(2.0, 2.0);
+	context.drawImage(render.bg, 0, 0);
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
@@ -80,7 +85,9 @@ function frame() {
 	}
 
 	// draw fg layers
+	context.drawImage(render.fg, 0, 0);
 
+	context.restore();
 	if (running) {
 		requestAnimationFrame(frame);
 	}
@@ -99,6 +106,8 @@ async function init() {
 
 	map = await loadTMXMap("maps/arena.xml");
 	console.info("Map", map);
+	render = new ArenaRender(map);
+	console.info("Render", render);
 
 	addEntity(new Player());
 
