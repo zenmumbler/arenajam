@@ -38,6 +38,9 @@ interface Sprite {
 	animation: Animation;
 	frameStart: number;
 	frameIndex: number;
+	flipHoriz: boolean;
+
+	onAnimCycleEnd?(): void;
 }
 
 function isSprite(o: any): o is Sprite {
@@ -66,12 +69,13 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	name = "player";
 	x = 0;
 	y = 0;
-	lastDir = "-";
 	animation!: Animation;
 	frameStart!: number;
 	frameIndex!: number;
+	flipHoriz = false;
 	mode = "stand";
 	movementSpeed = 0.8;
+
 	constructor() {
 		startAnimation(this, anims.stand);
 		this.x = 100;
@@ -96,29 +100,65 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	update() {
 		const usesDirectionKey = Input.left || Input.right || Input.up || Input.down;
 
-		if (usesDirectionKey) {
-			if (this.mode !== "walk") {
-				startAnimation(this, anims.walk);
-				this.mode = "walk";
-			}
-			this.moveCharacter();
-		}
-		else if (Input.attack) {
+		if (Input.attack) {
 			if (this.mode !== "attack") {
 				startAnimation(this, anims.attack);
 				this.mode = "attack";
 			}
 		}
-		else {
+		else if (usesDirectionKey) {
+			// can only start walking from stance
+			if (this.mode === "stand") {
+				startAnimation(this, anims.walk);
+				this.mode = "walk";
+			}
+			if (this.mode === "walk") {
+				this.moveCharacter();
+			}
+		}
+		else if (this.mode === "walk") {
+			startAnimation(this, anims.stand);
+			this.mode = "stand";
+		}
+	}
+
+	onAnimCycleEnd() {
+		if (this.mode === "attack") {
 			startAnimation(this, anims.stand);
 			this.mode = "stand";
 		}
 	}
 }
 
+
+class Minotaur {
+	name = "minotaur";
+	x = 200;
+	y = 80;
+	animation!: Animation;
+	frameStart = 0;
+	frameIndex = 0;
+	flipHoriz = false;
+}
+
+
 function frame() {
 	Input.update();
 	const now = Date.now();
+
+	// update animations
+	for (const [_, sprite] of sprites) {
+		// update current frame
+		let frame = sprite.animation.frames[sprite.frameIndex];
+		if (now - sprite.frameStart > frame.duration) {
+			sprite.frameStart += frame.duration;
+			sprite.frameIndex = (sprite.frameIndex + 1) % sprite.animation.frames.length;
+			frame = sprite.animation.frames[sprite.frameIndex];
+			if (sprite.frameIndex === 0 && sprite.onAnimCycleEnd) {
+				sprite.onAnimCycleEnd();
+			}
+		}
+	}
 
 	// update actors
 	for (const [_, actor] of actors) {
@@ -132,19 +172,27 @@ function frame() {
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
-		// update current frame
-		let frame = sprite.animation.frames[sprite.frameIndex];
-		if (now - sprite.frameStart > frame.duration) {
-			sprite.frameStart += frame.duration;
-			sprite.frameIndex = (sprite.frameIndex + 1) % sprite.animation.frames.length;
-			frame = sprite.animation.frames[sprite.frameIndex];
-		}
-
+		const frame = sprite.animation.frames[sprite.frameIndex];
 		const sheet = sprite.animation.sheet;
-		const dim = sheet.tileDim;
+		const dimx = sheet.tileWidth;
+		const dimy = sheet.tileHeight;
 		const tileX = frame.tileIndex % sheet.columns;
 		const tileY = (frame.tileIndex / sheet.columns) | 0;
-		context.drawImage(sheet.image, tileX * dim, tileY * dim, dim, dim, sprite.x * 2, sprite.y * 2, dim * 2, dim * 2);
+
+		context.save();
+		if (sprite.flipHoriz) {
+			// context.scale(-1, 1);
+			// dimx = -dimx;
+		}
+
+		context.drawImage(
+			sheet.image,
+			tileX * dimx, tileY * dimy,
+			dimx, dimy,
+			sprite.x * 2, sprite.y * 2,
+			dimx * 2, dimy * 2
+		);
+		context.restore();
 	}
 
 	// draw fg layers
@@ -178,7 +226,8 @@ async function init() {
 
 	map = await loadTMXMap("maps/arena.xml");
 	anims.walk = await loadAnimation("source-assets/sprites/walking-sprite.png", {
-		tileDim: 64,
+		tileWidth: 64,
+		tileHeight: 64,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
 			{ tileIndex: 1, duration: 100 },
@@ -187,7 +236,8 @@ async function init() {
 		]
 	});
 	anims.attack = await loadAnimation("source-assets/sprites/attack-sprite.png", {
-		tileDim: 64,
+		tileWidth: 64,
+		tileHeight: 64,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
 			{ tileIndex: 1, duration: 100 },
@@ -196,9 +246,10 @@ async function init() {
 		]
 	});
 	anims.stand = await loadAnimation("source-assets/sprites/standing-sprite.png", {
-		tileDim: 64,
+		tileWidth: 64,
+		tileHeight: 64,
 		frames: [
-			{ tileIndex: 0, duration: 1000}
+			{ tileIndex: 0, duration: 1000 }
 		]
 	});
 	render = new ArenaRender(map);

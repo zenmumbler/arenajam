@@ -141,12 +141,13 @@ async function loadTileSet(def: Element, ownerURL: string): Promise<TileSet> {
 		ownerURL = resolveRelativePath(source, ownerURL);
 		def = await loadXMLDocument(ownerURL);
 	}
-	const tileDim = intAttr(def, "tilewidth");
+	const tileWidth = intAttr(def, "tilewidth");
+	const tileHeight = intAttr(def, "tileheight");
 
 	const image = def.firstElementChild;
 	if (image && image.nodeName === "image") {
 		const imageURL = stringAttr(image, "source");
-		const sheet = await loadSpriteSheet(imageURL, ownerURL, tileDim);
+		const sheet = await loadSpriteSheet(imageURL, ownerURL, tileWidth, tileHeight);
 		return {
 			...sheet,
 			firstGID,
