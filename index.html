@@ -20,6 +20,10 @@
 			position: absolute;
 			z-index: 3;
 		}
+		p {
+			text-align: center;
+			color: white;
+		}
 	</style>
 </head>
 <body>
@@ -33,7 +37,8 @@
 		else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 	}
 </script>
-<p style="text-align: center;"><button onclick="handleFSClick()">Fullscreen</button></p>
+<p><button onclick="handleFSClick()">Fullscreen</button></p>
+<p id="dir"></p>
 <script src="build/arenajam.js"></script>
 </body>
 </html>

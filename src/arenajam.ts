@@ -60,21 +60,42 @@ class Player implements Entity, Actor, Positioned {
 	name = "player";
 	x = 0;
 	y = 0;
+	lastDir = "-";
 
 	update() {
-		//
+		let dir = "-";
+		if (Input.left) {
+			dir = "left";
+		}
+		else if (Input.right) {
+			dir = "right";
+		}
+		else if (Input.up) {
+			dir = "up";
+		}
+		else if (Input.down) {
+			dir = "down";
+		}
+		if (dir !== this.lastDir) {
+			document.querySelector("#dir")!.textContent = dir;
+			this.lastDir = dir;
+		}
 	}
 }
 
 function frame() {
+	Input.update();
+
 	// update actors
 	for (const [_, actor] of actors) {
 		actor.update();
 	}
 
 	// draw bg layers
-	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-	context.drawImage(render.bg, 0, 0, 768, 768);
+	const cw = context.canvas.width;
+	const ch = context.canvas.height;
+	// context.clearRect(0, 0, cw, ch);
+	context.drawImage(render.bg, 0, 0, cw, ch);
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
@@ -83,8 +104,9 @@ function frame() {
 	}
 
 	// draw fg layers
-	context.drawImage(render.fg, 0, 0, 768, 768);
+	context.drawImage(render.fg, 0, 0, cw, ch);
 
+	Input.keyboard.resetPerFrameData();
 	if (running) {
 		requestAnimationFrame(frame);
 	}
