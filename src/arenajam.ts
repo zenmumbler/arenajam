@@ -89,7 +89,7 @@ class Player implements Entity, Actor, Positioned, Sprite {
 		else if (Input.right) {
 			this.x += this.movementSpeed;
 		}
-		else if (Input.up) {
+		if (Input.up) {
 			this.y -= this.movementSpeed;
 		}
 		else if (Input.down) {
