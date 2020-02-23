@@ -172,27 +172,32 @@ function frame() {
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
-		const frame = sprite.animation.frames[sprite.frameIndex];
-		const sheet = sprite.animation.sheet;
+		const anim = sprite.animation;
+		const frame = anim.frames[sprite.frameIndex];
+		const sheet = anim.sheet;
 		const dimx = sheet.tileWidth;
 		const dimy = sheet.tileHeight;
 		const tileX = frame.tileIndex % sheet.columns;
 		const tileY = (frame.tileIndex / sheet.columns) | 0;
 
-		context.save();
 		if (sprite.flipHoriz) {
-			// context.scale(-1, 1);
-			// dimx = -dimx;
+			context.drawImage(
+				sheet.hFlipImage,
+				sheet.image.width - (tileX + 1) * dimx, tileY * dimy,
+				dimx, dimy,
+				(sprite.x + anim.offsetX) * 2, (sprite.y + anim.offsetY) * 2,
+				dimx * 2, dimy * 2
+			);
 		}
-
-		context.drawImage(
-			sheet.image,
-			tileX * dimx, tileY * dimy,
-			dimx, dimy,
-			sprite.x * 2, sprite.y * 2,
-			dimx * 2, dimy * 2
-		);
-		context.restore();
+		else {
+			context.drawImage(
+				sheet.image,
+				tileX * dimx, tileY * dimy,
+				dimx, dimy,
+				(sprite.x + anim.offsetX) * 2, (sprite.y + anim.offsetY) * 2,
+				dimx * 2, dimy * 2
+			);
+		}
 	}
 
 	// draw fg layers
