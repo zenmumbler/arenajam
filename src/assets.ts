@@ -37,12 +37,16 @@ export interface AnimationFrame {
 
 export interface Animation {
 	sheet: SpriteSheet;
+	offsetX: number;
+	offsetY: number;
 	frames: AnimationFrame[];
 }
 
 export interface AnimationDesc {
 	tileWidth: number;
 	tileHeight: number;
+	offsetX: number;
+	offsetY: number;
 	frames: AnimationFrame[];
 }
 
@@ -62,6 +66,8 @@ export async function loadAnimation(fileName: string, desc: AnimationDesc): Prom
 	const sheet = await loadSpriteSheet(fileName, "", desc.tileWidth, desc.tileHeight);
 	return {
 		sheet,
+		offsetX: desc.offsetX,
+		offsetY: desc.offsetY,
 		frames: desc.frames
 	};
 }

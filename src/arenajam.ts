@@ -228,6 +228,8 @@ async function init() {
 	anims.walk = await loadAnimation("source-assets/sprites/walking-sprite.png", {
 		tileWidth: 64,
 		tileHeight: 64,
+		offsetX: 0,
+		offsetY: 2,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
 			{ tileIndex: 1, duration: 100 },
@@ -248,6 +250,8 @@ async function init() {
 	anims.stand = await loadAnimation("source-assets/sprites/standing-sprite.png", {
 		tileWidth: 64,
 		tileHeight: 64,
+		offsetX: 0,
+		offsetY: 0,
 		frames: [
 			{ tileIndex: 0, duration: 1000 }
 		]
