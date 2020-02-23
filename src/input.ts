@@ -235,6 +235,14 @@ class InputHandler {
 		return d;
 	}
 
+	get attack() {
+		let d = this.keyboard.down(Key.SPACE);
+		if (this.gamepad) {
+			d = d || this.gamepad.buttons[this.gamepadStd ? StdButton.R1 : RawButton.R1].pressed;
+		}
+		return d;
+	}
+
 	onActiveChange: ((active: boolean) => void) | undefined;
 	active = true;
 }

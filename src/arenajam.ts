@@ -79,7 +79,6 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	}
 
 	moveCharacter () {
-
 		if (Input.left) {
 			this.x -= this.movementSpeed;
 		}
@@ -103,6 +102,12 @@ class Player implements Entity, Actor, Positioned, Sprite {
 				this.mode = "walk";
 			}
 			this.moveCharacter();
+		}
+		else if (Input.attack) {
+			if (this.mode !== "attack") {
+				startAnimation(this, anims.attack);
+				this.mode = "attack";
+			}
 		}
 		else {
 			startAnimation(this, anims.stand);
