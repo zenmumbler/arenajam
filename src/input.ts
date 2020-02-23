@@ -236,7 +236,7 @@ class InputHandler {
 	}
 
 	get attack() {
-		let d = this.keyboard.down(Key.SPACE);
+		let d = this.keyboard.pressed(Key.SPACE);
 		if (this.gamepad) {
 			d = d || this.gamepad.buttons[this.gamepadStd ? StdButton.R1 : RawButton.R1].pressed;
 		}
