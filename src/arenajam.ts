@@ -3,7 +3,7 @@
 
 import { on, show, hide } from "./util";
 import { Input } from "./input";
-import { SpriteSheet, Animation, AnimationFrame } from "./assets";
+import { SpriteSheet, Animation, AnimationFrame, loadAnimation } from "./assets";
 import { TMXMap, loadTMXMap } from "./tilemap";
 import { ArenaRender } from "./render";
 
@@ -11,6 +11,7 @@ let running = true;
 let context: CanvasRenderingContext2D;
 let map: TMXMap;
 let render: ArenaRender;
+const anims: Record<string, Animation> = {};
 
 interface Entity {
 	name: string;
@@ -35,17 +36,17 @@ function isActor(o: any): o is Actor {
 
 interface Sprite {
 	animation: Animation;
-	cycleStart: number;
+	frameStart: number;
 	frameIndex: number;
 }
 
 function isSprite(o: any): o is Sprite {
-	return o && typeof (o) === "object" && o.animation && typeof o.cycleStart === "number" && typeof o.frameIndex === "number";
+	return o && typeof (o) === "object" && o.animation && typeof o.frameStart === "number" && typeof o.frameIndex === "number";
 }
 
 function startAnimation(spr: Sprite, anim: Animation) {
 	spr.animation = anim;
-	spr.cycleStart = Date.now();
+	spr.frameStart = Date.now();
 	spr.frameIndex = 0;
 }
 
@@ -67,11 +68,13 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	y = 0;
 	lastDir = "-";
 	animation!: Animation;
-	cycleStart!: number;
+	frameStart!: number;
 	frameIndex!: number;
 
 	constructor() {
-		// startAnimation(this, )
+		startAnimation(this, anims.walk);
+		this.x = 100;
+		this.y = 100;
 	}
 
 	update() {
@@ -97,6 +100,7 @@ class Player implements Entity, Actor, Positioned, Sprite {
 
 function frame() {
 	Input.update();
+	const now = Date.now();
 
 	// update actors
 	for (const [_, actor] of actors) {
@@ -106,12 +110,18 @@ function frame() {
 	// draw bg layers
 	const cw = context.canvas.width;
 	const ch = context.canvas.height;
-	// context.clearRect(0, 0, cw, ch);
 	context.drawImage(render.bg, 0, 0, cw, ch);
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
-		const frame = sprite.animation.frames[sprite.frameIndex];
+		// update current frame
+		let frame = sprite.animation.frames[sprite.frameIndex];
+		if (now - sprite.frameStart > frame.duration) {
+			sprite.frameStart += frame.duration;
+			sprite.frameIndex = (sprite.frameIndex + 1) % sprite.animation.frames.length;
+			frame = sprite.animation.frames[sprite.frameIndex];
+		}
+
 		const sheet = sprite.animation.sheet;
 		const dim = sheet.tileDim;
 		const tileX = frame.tileIndex % sheet.columns;
@@ -140,9 +150,25 @@ async function init() {
 	};
 
 	map = await loadTMXMap("maps/arena.xml");
-	console.info("Map", map);
+	anims.walk = await loadAnimation("source-assets/sprites/walking-sprite.png", {
+		tileDim: 64,
+		frames: [
+			{ tileIndex: 0, duration: 100 },
+			{ tileIndex: 1, duration: 100 },
+			{ tileIndex: 2, duration: 100 },
+			{ tileIndex: 3, duration: 100 },
+		]
+	});
+	anims.attack = await loadAnimation("source-assets/sprites/attack-sprite.png", {
+		tileDim: 64,
+		frames: [
+			{ tileIndex: 0, duration: 100 },
+			{ tileIndex: 1, duration: 100 },
+			{ tileIndex: 2, duration: 100 },
+			{ tileIndex: 3, duration: 100 },
+		]
+	});
 	render = new ArenaRender(map);
-	console.info("Render", render);
 
 	addEntity(new Player());
 
