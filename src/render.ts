@@ -7,7 +7,7 @@ export class ArenaRender {
 	bg: HTMLCanvasElement;
 	fg: HTMLCanvasElement;
 
-	tileForGID(gid: number): { src: CanvasImageSource, tx: number, ty: number, dim: number } {
+	tileForGID(gid: number): { src: CanvasImageSource, tx: number, ty: number, tw: number, th: number } {
 		let tsi = this.map.tileSets.length - 1;
 		while (tsi > 0) {
 			if (gid >= this.map.tileSets[tsi].firstGID) {
@@ -22,9 +22,10 @@ export class ArenaRender {
 		const tileX = tsti % ts.columns;
 		return {
 			src: ts.image,
-			tx: tileX * ts.tileDim,
-			ty: tileY * ts.tileDim,
-			dim: ts.tileDim
+			tx: tileX * ts.tileWidth,
+			ty: tileY * ts.tileHeight,
+			tw: ts.tileWidth,
+			th: ts.tileHeight
 		};
 	}
 
@@ -37,8 +38,8 @@ export class ArenaRender {
 			for (let x = 0; x < layer.width; ++x) {
 				const gid = layer.tileIDs[offset];
 				if (gid > 0) {
-					const { src, tx, ty, dim } = this.tileForGID(gid);
-					ctx.drawImage(src, tx, ty, dim, dim, x * w, y * w, dim, dim);
+					const { src, tx, ty, tw, th } = this.tileForGID(gid);
+					ctx.drawImage(src, tx, ty, tw, th, x * w, y * w, tw, th);
 				}
 				offset += 1;
 			}

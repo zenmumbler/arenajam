@@ -23,7 +23,8 @@ export async function loadImageData(fileName: string) {
 }
 
 export interface SpriteSheet {
-	tileDim: number;
+	tileWidth: number;
+	tileHeight: number;
 	columns: number;
 	rows: number;
 	image: CanvasImageSource;
@@ -40,23 +41,25 @@ export interface Animation {
 }
 
 export interface AnimationDesc {
-	tileDim: number;
+	tileWidth: number;
+	tileHeight: number;
 	frames: AnimationFrame[];
 }
 
-export async function loadSpriteSheet(fileName: string, ownerURL: string, tileDim: number): Promise<SpriteSheet> {
+export async function loadSpriteSheet(fileName: string, ownerURL: string, tileWidth: number, tileHeight: number): Promise<SpriteSheet> {
 	const fullURL = resolveRelativePath(fileName, ownerURL);
 	const image = await loadImage(fullURL);
 	return {
-		tileDim,
-		columns: (image.width / tileDim) | 0,
-		rows: (image.height / tileDim) | 0,
+		tileWidth,
+		tileHeight,
+		columns: (image.width / tileWidth) | 0,
+		rows: (image.height / tileWidth) | 0,
 		image
 	};
 }
 
 export async function loadAnimation(fileName: string, desc: AnimationDesc): Promise<Animation> {
-	const sheet = await loadSpriteSheet(fileName, "", desc.tileDim);
+	const sheet = await loadSpriteSheet(fileName, "", desc.tileWidth, desc.tileHeight);
 	return {
 		sheet,
 		frames: desc.frames

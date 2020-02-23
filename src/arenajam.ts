@@ -112,10 +112,17 @@ function frame() {
 		}
 
 		const sheet = sprite.animation.sheet;
-		const dim = sheet.tileDim;
+		const dimx = sheet.tileWidth;
+		const dimy = sheet.tileHeight;
 		const tileX = frame.tileIndex % sheet.columns;
 		const tileY = (frame.tileIndex / sheet.columns) | 0;
-		context.drawImage(sheet.image, tileX * dim, tileY * dim, dim, dim, sprite.x * 2, sprite.y * 2, dim * 2, dim * 2);
+		context.drawImage(
+			sheet.image,
+			tileX * dimx, tileY * dimy,
+			dimx, dimy,
+			sprite.x * 2, sprite.y * 2,
+			dimx * 2, dimy * 2
+		);
 	}
 
 	// draw fg layers
