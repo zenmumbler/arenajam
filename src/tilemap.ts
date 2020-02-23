@@ -11,6 +11,15 @@ function intAttr(el: Element, name: string, def = 0) {
 	return str.length ? parseInt(str, 10) : def;
 }
 
+function forEachChildElement(el: Element, cb: (cel: Element) => void) {
+	el.childNodes.forEach(node => {
+		if (node.nodeType !== Node.ELEMENT_NODE) {
+			return;
+		}
+		cb(node as Element);
+	});
+}
+
 export const enum TileRot {
 	None = 0,
 	Diag = 1,
@@ -18,51 +27,63 @@ export const enum TileRot {
 	Horiz = 4
 }
 
-export interface TMXLayer {
+export interface Layer {
+	id: number;
 	name: string;
+	properties: Record<string, string>;
+}
+
+export interface ObjectLayer extends Layer {
+	type: "object";
+	objects: string[];
+}
+
+export interface TileLayer extends Layer {
+	type: "tile";
 	width: number;
 	height: number;
-	properties: Record<string, string>;
 	tileRotations: Uint8Array;
 	tileIDs: Uint32Array;
 }
 
-/*
-class TMXLayer {
-	tileAt(col: number, row: number) {
-		if (row < 0 || col < 0 || row >= this.height || col >= this.width) {
-			return -1;
-		}
-		return this.tileIDs[(row * this.width) + col];
-	}
+export type TMXLayer = ObjectLayer | TileLayer;
 
-	setTileAt(col: number, row: number, tile: number) {
-		if (row < 0 || col < 0 || row >= this.height || col >= this.width) {
-			return;
-		}
-		this.tileIDs[(row * this.width) + col] = tile;
-	}
+function readLayerProps(layerEl: Element): Layer {
+	const id = intAttr(layerEl, "id");
+	const name = stringAttr(layerEl, "name");
+	const properties: Record<string, string> = {};
 
-	eachTile(callback: (row: number, col: number, tile: number, rot: TileRot) => void) {
-		let off = 0;
-		for (let row = 0; row < this.height; ++row) {
-			for (let col = 0; col < this.width; ++col) {
-				if (this.tileIDs[off]) {
-					callback(row, col, this.tileIDs[off], this.tileRotations[off]);
-				}
-				++off;
-			}
+	forEachChildElement(layerEl, el => {
+		if (el.nodeName === "properties") {
+			forEachChildElement(el, prop => {
+				const propName = stringAttr(prop, "name");
+				const propVal = stringAttr(prop, "value");
+				properties[propName] = propVal;
+			});
 		}
-	}
+	});
+
+	return {
+		id,
+		name,
+		properties
+	};
 }
-*/
 
-function loadLayer(layerEl: Element): TMXLayer {
+function loadObjectLayer(layerEl: Element): ObjectLayer {
+	const layer = readLayerProps(layerEl);
+	return {
+		type: "object",
+		...layer,
+		objects: []
+	};
+}
+
+function loadTileLayer(layerEl: Element): TileLayer {
+	const layer = readLayerProps(layerEl);
 	const width = intAttr(layerEl, "width");
 	const height = intAttr(layerEl, "height");
-	const name = stringAttr(layerEl, "name");
 	const compression = intAttr(layerEl, "compressionlevel", 0);
-	const properties: Record<string, string> = {};
 	let tileIDs: Uint32Array | undefined;
 	let tileRotations: Uint8Array | undefined;
 
@@ -70,23 +91,8 @@ function loadLayer(layerEl: Element): TMXLayer {
 		throw new Error("compressed layer data not supported");
 	}
 
-	layerEl.childNodes.forEach(node => {
-		if (node.nodeType !== Node.ELEMENT_NODE) {
-			return;
-		}
-		const el = node as Element;
-		if (el.nodeName === "properties") {
-			el.childNodes.forEach(prop => {
-				if (prop.nodeType !== Node.ELEMENT_NODE) {
-					return;
-				}
-				const propEl = prop as Element;
-				const propName = stringAttr(propEl, "name");
-				const propVal = stringAttr(propEl, "value");
-				properties[propName] = propVal;
-			});
-		}
-		else if (el.nodeName === "data") {
+	forEachChildElement(layerEl, el => {
+		if (el.nodeName === "data") {
 			const dataStr = el.textContent || "";
 			const enc = stringAttr(el, "encoding");
 			if (enc === "base64") {
@@ -112,10 +118,10 @@ function loadLayer(layerEl: Element): TMXLayer {
 
 	if (tileIDs && tileRotations) {
 		return {
+			type: "tile",
+			...layer,
 			width,
 			height,
-			name,
-			properties,
 			tileIDs,
 			tileRotations
 		};
@@ -167,16 +173,15 @@ export async function loadTMXMap(url: string): Promise<TMXMap> {
 	const layers: TMXLayer[] = [];
 	const tileSetLoads: Promise<TileSet>[] = [];
 
-	tileDoc.childNodes.forEach(node => {
-		if (node.nodeType !== Node.ELEMENT_NODE) {
-			return;
-		}
-		const el = node as Element;
-		if (node.nodeName === "tileset") {
+	forEachChildElement(tileDoc, el => {
+		if (el.nodeName === "tileset") {
 			tileSetLoads.push(loadTileSet(el, url));
 		}
-		if (node.nodeName === "layer") {
-			layers.push(loadLayer(el));
+		else if (el.nodeName === "layer") {
+			layers.push(loadTileLayer(el));
+		}
+		else if (el.nodeName === "objectgroup") {
+			layers.push(loadObjectLayer(el));
 		}
 	});
 
