@@ -250,14 +250,16 @@ async function init() {
 			{ tileIndex: 3, duration: 100 },
 		]
 	});
-	anims.attack = await loadAnimation("source-assets/sprites/attack-sprite.png", {
-		tileWidth: 64,
-		tileHeight: 64,
+	anims.attack = await loadAnimation("source-assets/sprites/attack-w-sword-sprite.png", {
+		tileWidth: 68,
+		tileHeight: 90,
+		offsetX: 0,
+		offsetY: -11,
 		frames: [
-			{ tileIndex: 0, duration: 100 },
-			{ tileIndex: 1, duration: 100 },
-			{ tileIndex: 2, duration: 100 },
-			{ tileIndex: 3, duration: 100 },
+			{ tileIndex: 0, duration: 120 },
+			{ tileIndex: 1, duration: 80 },
+			{ tileIndex: 2, duration: 50 },
+			{ tileIndex: 3, duration: 50 },
 		]
 	});
 	anims.stand = await loadAnimation("source-assets/sprites/standing-sprite.png", {
