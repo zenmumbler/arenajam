@@ -131,14 +131,22 @@ class Player implements Entity, Actor, Positioned, Sprite {
 }
 
 
-class Minotaur {
+class Minotaur implements Entity, Actor, Positioned, Sprite {
 	name = "minotaur";
 	x = 200;
 	y = 80;
 	animation!: Animation;
 	frameStart = 0;
 	frameIndex = 0;
-	flipHoriz = false;
+	flipHoriz = true;
+
+	constructor() {
+		startAnimation(this, anims.minoIdle);
+	}
+
+	update() {
+		//
+	}
 }
 
 
@@ -277,6 +285,7 @@ async function init() {
 	render = new ArenaRender(map);
 
 	addEntity(new Player());
+	addEntity(new Minotaur());
 
 	frame();
 }
