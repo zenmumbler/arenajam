@@ -159,10 +159,12 @@ async function loadTileSet(def: Element, ownerURL: string): Promise<TileSet> {
 }
 
 export interface TMXMap {
-	layers: TMXLayer[];
-	tileSets: TileSet[];
 	width: number;
 	height: number;
+	tileWidth: number;
+	tileHeight: number;
+	layers: TMXLayer[];
+	tileSets: TileSet[];
 }
 
 export async function loadTMXMap(url: string): Promise<TMXMap> {
@@ -170,6 +172,8 @@ export async function loadTMXMap(url: string): Promise<TMXMap> {
 
 	const width = intAttr(tileDoc, "width");
 	const height = intAttr(tileDoc, "height");
+	const tileWidth = intAttr(tileDoc, "tilewidth");
+	const tileHeight = intAttr(tileDoc, "tileheight");
 	const layers: TMXLayer[] = [];
 	const tileSetLoads: Promise<TileSet>[] = [];
 
@@ -188,6 +192,8 @@ export async function loadTMXMap(url: string): Promise<TMXMap> {
 	return {
 		width,
 		height,
+		tileWidth,
+		tileHeight,
 		layers,
 		tileSets: await Promise.all(tileSetLoads)
 	};
