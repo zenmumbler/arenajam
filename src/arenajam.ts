@@ -38,6 +38,7 @@ interface Sprite {
 	animation: Animation;
 	frameStart: number;
 	frameIndex: number;
+	flipHoriz: boolean;
 }
 
 function isSprite(o: any): o is Sprite {
@@ -70,6 +71,7 @@ class Player implements Entity, Actor, Positioned, Sprite {
 	animation!: Animation;
 	frameStart!: number;
 	frameIndex!: number;
+	flipHoriz = false;
 
 	constructor() {
 		startAnimation(this, anims.walk);
@@ -116,6 +118,13 @@ function frame() {
 		const dimy = sheet.tileHeight;
 		const tileX = frame.tileIndex % sheet.columns;
 		const tileY = (frame.tileIndex / sheet.columns) | 0;
+
+		context.save();
+		if (sprite.flipHoriz) {
+			// context.scale(-1, 1);
+			// dimx = -dimx;
+		}
+
 		context.drawImage(
 			sheet.image,
 			tileX * dimx, tileY * dimy,
@@ -123,6 +132,7 @@ function frame() {
 			sprite.x * 2, sprite.y * 2,
 			dimx * 2, dimy * 2
 		);
+		context.restore();
 	}
 
 	// draw fg layers
