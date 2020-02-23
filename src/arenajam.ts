@@ -39,6 +39,8 @@ interface Sprite {
 	frameStart: number;
 	frameIndex: number;
 	flipHoriz: boolean;
+
+	onAnimCycleEnd?(): void;
 }
 
 function isSprite(o: any): o is Sprite {
@@ -123,6 +125,20 @@ function frame() {
 	Input.update();
 	const now = Date.now();
 
+	// update animations
+	for (const [_, sprite] of sprites) {
+		// update current frame
+		let frame = sprite.animation.frames[sprite.frameIndex];
+		if (now - sprite.frameStart > frame.duration) {
+			sprite.frameStart += frame.duration;
+			sprite.frameIndex = (sprite.frameIndex + 1) % sprite.animation.frames.length;
+			frame = sprite.animation.frames[sprite.frameIndex];
+			if (sprite.frameIndex === 0 && sprite.onAnimCycleEnd) {
+				sprite.onAnimCycleEnd();
+			}
+		}
+	}
+
 	// update actors
 	for (const [_, actor] of actors) {
 		actor.update();
@@ -135,14 +151,7 @@ function frame() {
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
-		// update current frame
-		let frame = sprite.animation.frames[sprite.frameIndex];
-		if (now - sprite.frameStart > frame.duration) {
-			sprite.frameStart += frame.duration;
-			sprite.frameIndex = (sprite.frameIndex + 1) % sprite.animation.frames.length;
-			frame = sprite.animation.frames[sprite.frameIndex];
-		}
-
+		const frame = sprite.animation.frames[sprite.frameIndex];
 		const sheet = sprite.animation.sheet;
 		const dimx = sheet.tileWidth;
 		const dimy = sheet.tileHeight;
@@ -219,7 +228,7 @@ async function init() {
 		tileWidth: 64,
 		tileHeight: 64,
 		frames: [
-			{ tileIndex: 0, duration: 1000}
+			{ tileIndex: 0, duration: 1000 }
 		]
 	});
 	render = new ArenaRender(map);
