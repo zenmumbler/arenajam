@@ -89,7 +89,7 @@ class Player implements Entity, Actor, Positioned, Sprite {
 		else if (Input.right) {
 			this.x += this.movementSpeed;
 		}
-		else if (Input.up) {
+		if (Input.up) {
 			this.y -= this.movementSpeed;
 		}
 		else if (Input.down) {
@@ -131,14 +131,22 @@ class Player implements Entity, Actor, Positioned, Sprite {
 }
 
 
-class Minotaur {
+class Minotaur implements Entity, Actor, Positioned, Sprite {
 	name = "minotaur";
 	x = 200;
 	y = 80;
 	animation!: Animation;
 	frameStart = 0;
 	frameIndex = 0;
-	flipHoriz = false;
+	flipHoriz = true;
+
+	constructor() {
+		startAnimation(this, anims.minoIdle);
+	}
+
+	update() {
+		//
+	}
 }
 
 
@@ -172,27 +180,32 @@ function frame() {
 
 	// draw sprites
 	for (const [_, sprite] of sprites) {
-		const frame = sprite.animation.frames[sprite.frameIndex];
-		const sheet = sprite.animation.sheet;
+		const anim = sprite.animation;
+		const frame = anim.frames[sprite.frameIndex];
+		const sheet = anim.sheet;
 		const dimx = sheet.tileWidth;
 		const dimy = sheet.tileHeight;
 		const tileX = frame.tileIndex % sheet.columns;
 		const tileY = (frame.tileIndex / sheet.columns) | 0;
 
-		context.save();
 		if (sprite.flipHoriz) {
-			// context.scale(-1, 1);
-			// dimx = -dimx;
+			context.drawImage(
+				sheet.hFlipImage,
+				sheet.image.width - (tileX + 1) * dimx, tileY * dimy,
+				dimx, dimy,
+				(sprite.x + anim.offsetX) * 2, (sprite.y + anim.offsetY) * 2,
+				dimx * 2, dimy * 2
+			);
 		}
-
-		context.drawImage(
-			sheet.image,
-			tileX * dimx, tileY * dimy,
-			dimx, dimy,
-			sprite.x * 2, sprite.y * 2,
-			dimx * 2, dimy * 2
-		);
-		context.restore();
+		else {
+			context.drawImage(
+				sheet.image,
+				tileX * dimx, tileY * dimy,
+				dimx, dimy,
+				(sprite.x + anim.offsetX) * 2, (sprite.y + anim.offsetY) * 2,
+				dimx * 2, dimy * 2
+			);
+		}
 	}
 
 	// draw fg layers
@@ -228,6 +241,8 @@ async function init() {
 	anims.walk = await loadAnimation("source-assets/sprites/walking-sprite.png", {
 		tileWidth: 64,
 		tileHeight: 64,
+		offsetX: 0,
+		offsetY: 2,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
 			{ tileIndex: 1, duration: 100 },
@@ -235,26 +250,44 @@ async function init() {
 			{ tileIndex: 3, duration: 100 },
 		]
 	});
-	anims.attack = await loadAnimation("source-assets/sprites/attack-sprite.png", {
-		tileWidth: 64,
-		tileHeight: 64,
+	anims.attack = await loadAnimation("source-assets/sprites/attack-w-sword-sprite.png", {
+		tileWidth: 68,
+		tileHeight: 90,
+		offsetX: 0,
+		offsetY: -11,
 		frames: [
-			{ tileIndex: 0, duration: 100 },
-			{ tileIndex: 1, duration: 100 },
-			{ tileIndex: 2, duration: 100 },
-			{ tileIndex: 3, duration: 100 },
+			{ tileIndex: 0, duration: 120 },
+			{ tileIndex: 1, duration: 80 },
+			{ tileIndex: 2, duration: 50 },
+			{ tileIndex: 3, duration: 50 },
 		]
 	});
 	anims.stand = await loadAnimation("source-assets/sprites/standing-sprite.png", {
 		tileWidth: 64,
 		tileHeight: 64,
+		offsetX: 0,
+		offsetY: 0,
 		frames: [
 			{ tileIndex: 0, duration: 1000 }
+		]
+	});
+	anims.minoIdle = await loadAnimation("source-assets/sprites/enemy-1-idle.png", {
+		tileWidth: 64,
+		tileHeight: 64,
+		offsetX: 0,
+		offsetY: 0,
+		frames: [
+			{ tileIndex: 0, duration: 100 },
+			{ tileIndex: 1, duration: 100 },
+			{ tileIndex: 2, duration: 100 },
+			{ tileIndex: 3, duration: 100 },
+			{ tileIndex: 4, duration: 100 }
 		]
 	});
 	render = new ArenaRender(map);
 
 	addEntity(new Player());
+	addEntity(new Minotaur());
 
 	frame();
 }
