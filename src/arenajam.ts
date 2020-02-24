@@ -186,7 +186,7 @@ function frame() {
 	const ch = context.canvas.height;
 	context.drawImage(render.bg, 0, 0, cw, ch);
 
-	// draw sprites
+	// sort sprites
 	const sortedSprites = [...sprites.values()];
 	sortedSprites.sort((a, b) => {
 		// round each coord to a pixel
@@ -198,6 +198,7 @@ function frame() {
 		return (ay - by) || (ax - bx);
 	});
 
+	// draw sprites
 	for (const sprite of sortedSprites) {
 		const anim = sprite.animation;
 		const frame = anim.frames[sprite.frameIndex];
@@ -260,7 +261,7 @@ async function init() {
 	anims.walk = await loadAnimation("source-assets/sprites/walking-sprite.png", {
 		tileWidth: 64,
 		tileHeight: 64,
-		offsetX: 0,
+		offsetX: -2,
 		offsetY: 2,
 		frames: [
 			{ tileIndex: 0, duration: 100 },
